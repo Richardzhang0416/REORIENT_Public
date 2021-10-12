@@ -1,0 +1,5 @@
+push!(LOAD_PATH,"$(pwd())/structures")
+push!(LOAD_PATH,"$(pwd())/functions")
+include("./load_packages.jl")
+include("./load_structures.jl")
+include("./load_data_ns.jl")

@@ -1,0 +1,585 @@
+---
+title: "OffMod_plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## This is the R file for all plots in paper "Optimisation, Potential And Sensitivity Analysis of Offshore Energy Hub".
+load packages
+```{r cars}
+library(ggplot2)
+library(cowplot)
+library(egg)
+library(dplyr)
+library(gridExtra)
+library(viridis)
+library(patchwork)
+library(readxl)
+library(latex2exp)
+library(ggsci)
+library(ggrepel)
+library(ggpubr)
+library(gtable)
+library(scales)
+```
+
+##### energy_load_supply
+```{r cars}
+energy_load_supply = read_xlsx("energy_load_supply.xlsx")
+ggplot(data=energy_load_supply, aes(x=period))+
+  geom_line(data=energy_load_supply, aes(y=power_demand, color="power demand"),size=0.3)+
+    geom_line(data=energy_load_supply, aes(y=OCGT_power, color="OCGT power"),size=0.3)+
+    geom_line(data=energy_load_supply, aes(y=ave_power_demand, color="ave power demand"),size=0.3,linetype = "dashed")+
+      geom_line(data=energy_load_supply, aes(y=ave_OCGT_power, color="ave OCGT power"),size=0.3,linetype = "dashed")+
+  facet_grid(vars(cluster), vars(slice), scales='free', margins = "am")+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=90, hjust=0.5,vjust=0.5),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+  labs(x="\n Period (hour)",y="Power (MW)")
+ggsave("electricity_load_supply.pdf", width=14, units="cm")
+```
+
+```{r cars}
+energy_load_supply = read_xlsx("energy_load_supply.xlsx")
+ggplot(data=energy_load_supply, aes(x=period))+
+  geom_line(data=energy_load_supply, aes(y=heat_demand, color="heat demand"),size=0.3)+
+  geom_line(data=energy_load_supply, aes(y=OCGT_heat, color="OCGT heat"),size=0.3)+
+  geom_line(data=energy_load_supply, aes(y=ave_heat_demand, color="ave heat demand"),size=0.3,linetype="dashed")+
+  geom_line(data=energy_load_supply, aes(y=ave_OCGT_heat, color="ave OCGT heat"),size=0.3,linetype="dashed")+
+  facet_grid(vars(cluster), vars(slice), scales='free', margins = "am")+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=90, hjust=0.5,vjust=0.5),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+  # scale_color_npg()+
+  labs(x="\n Period (hour)",y="Heat (MW)")
+ggsave("heat_load_supply.pdf", width=14, units="cm")
+```
+#### relative power demand 
+```{r cars}
+rel_power_demand = read_xlsx("rel_power_demand.xlsx")
+ggplot(data=rel_power_demand, aes(x=cluster, y=value, fill=type)) +
+    scale_y_continuous(breaks = round(seq(0, 100, by = 10),1))+
+    geom_bar(stat = "identity", position="dodge") +
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"))+
+  labs(x="",y="Power demand (%)")
+  # scale_fill_npg()
+  #  scale_color_viridis(discrete = TRUE, option = "D")+
+  # scale_fill_viridis(discrete = TRUE) 
+  # scale_fill_brewer(palette = "Dark2")
+ggsave("rel_power_demand.pdf", width=14,height=5.5,  units="cm")
+```
+##### power demand absolute value stacked bar plot
+```{r cars}
+power_demand = read_xlsx("power_demand.xlsx")
+ggplot(data=power_demand, aes(x=cluster, y=value, fill=type)) +
+    # scale_y_continuous(breaks = round(seq(0, 100, by = 10),1))+
+    geom_bar(position="stack",stat="identity") +
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"))+
+    # scale_fill_npg()+
+  # scale_fill_brewer(palette = "Dark2")+
+  scale_fill_brewer(palette = "Pastel1",direction=-4)+
+  labs(x="",y="Power demand (GWh/yr)")
+  #  scale_color_viridis(discrete = TRUE, option = "D")+
+  # scale_fill_viridis(discrete = TRUE) 
+  
+ggsave("power_demand.pdf", width=14,height=5.5,  units="cm")
+```
+#### relative emission
+```{r cars}
+rel_emission = read_xlsx("rel_emission.xlsx")
+ggplot(data=rel_emission, aes(x=cluster, y=emission)) +
+    scale_y_continuous(breaks = round(seq(0, 100, by = 10),1))+
+    geom_bar(stat = "identity", position="dodge") +
+theme(legend.title = element_blank(),
+      legend.box="vertical", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"), panel.grid.minor=element_blank())+
+  labs(x=" ",y="Emission (%)")+
+  scale_fill_npg()
+ggsave("rel_emission_bar.pdf", width=8.9, height=5.5, units="cm")
+```
+##### pie plot
+```{r cars}
+library(ggrepel)
+rel_emission = read_xlsx("rel_emission.xlsx")
+rel_emission=data.frame(remission=round(rel_emission$emission/100,digits=3),rel_emission)
+
+df2 <- rel_emission %>% 
+  mutate(
+    cs = rev(cumsum(rev(remission))), 
+    pos = remission/2 + lead(cs, 1),
+    pos = if_else(is.na(pos), remission/2, pos))
+
+ggplot(data=rel_emission, aes(x="", y=remission,fill=cluster)) +
+  geom_col(width = 1)+
+     coord_polar(theta="y",start = 0 )+
+  scale_fill_brewer(palette = "Pastel1",direction=-4) +
+  geom_label_repel(aes(y = pos, label = percent(remission)), data = df2, size=4, show.legend = FALSE, nudge_x = 1) +
+  theme_void()+
+  theme(legend.title = element_blank())
+ggsave("rel_emission_pie.pdf", width=9, height=5.56, units="cm")
+```
+
+
+##### plot of absolute emission
+```{r cars}
+rel_emission = read_xlsx("emission.xlsx")
+ggplot(data=rel_emission, aes(x=cluster, y=emission)) +
+    geom_bar(stat = "identity", position="dodge") +
+theme(legend.title = element_blank(),
+      legend.box="vertical", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"), panel.grid.minor=element_blank())+
+  labs(x=" ",y="Emission (t)")+
+  scale_fill_npg()
+ggsave("emission.pdf", width=8.9, height=5.5, units="cm")
+```
+
+
+##### sensitivity analysis of CO_2 tax
+##### emission
+```{r cars}
+emission = read_xlsx("co2tax_sensitivity_5000.xlsx", sheet="emission")
+emission_plot=ggplot(data=emission, aes(x=co2tax))+
+  geom_line(data=emission, aes(y=emission, color="OEH"),size=0.3)+
+  geom_line(data=emission, aes(y=emission_nohub, color="Base"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+ ylab("Emission (Mt)")+
+     xlab(TeX("$\n CO_2$ tax (EUR/t)"))
+```
+##### cost
+```{r cars}
+cost=read_xlsx("co2tax_sensitivity_5000.xlsx", sheet="cost")
+cost_plot=ggplot(data=cost, aes(x=co2tax))+
+  geom_line(data=cost, aes(y=cost_hub, color="OEH"),size=0.3)+
+  geom_line(data=cost, aes(y=cost_nohub, color="Base"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+ ylab("Total cost (MEUR)")+
+   xlab(TeX("$\n CO_2$ tax (EUR/t)"))
+
+ggarrange(emission_plot, cost_plot,common.legend = TRUE, legend="bottom")
+ggsave("co2tax_emission_cost.pdf", width=14,height=5.5,units="cm")
+```
+##### energy loss
+```{r cars}
+el = read_xlsx("co2tax_sensitivity_5000.xlsx", sheet="energy_loss")
+loss=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+tax=c(rep(el$co2tax,6))
+data=data.frame(loss,type,tax)
+
+el=read_xlsx("co2tax_nohub_sensitivity_5000.xlsx", sheet="energy_loss")
+loss2=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type2 = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+tax2=c(rep(el$co2tax,6))
+
+loss3=c(loss,loss2) 
+type3=c(type,type2)
+tax3=c(tax,tax2)
+case=c(rep("OEH", 1506), rep("Base", 1506))
+data3=data.frame(loss3,type3,tax3,case)
+
+ggplot(data=data3, aes(x=tax3, y=loss3, fill=type3), size=1)+
+  geom_area()+
+    facet_wrap(~case)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+  scale_fill_brewer(palette = "Dark2")+
+ ylab("Energy loss (GWh)")+
+     xlab(TeX("$\n CO_2$ tax (EUR/t)"))
+  
+ggsave("co2tax_energy_loss.pdf", width=14,height=8.6, units="cm")
+```
+##### technology
+```{r cars}
+tech2 = read_xlsx("co2tax_sensitivity_5000.xlsx", sheet="tech")
+tech2$location=factor(tech2$location, levels=c("cluster1","cluster2","cluster4","cluster3","cluster5"))
+ggplot(data=tech2, aes(x=co2tax))+  
+    scale_x_continuous(breaks =round(seq(0, 500, by = 150),1))+
+  geom_line(data=tech2, aes(y=electrolyser, color="electrolyser"),size=0.3)+
+  geom_line(data=tech2, aes(y=fuel_cell, color="fuel cell"),size=0.3)+
+  geom_line(data=tech2, aes(y=battery, color="battery"),size=0.3)+
+  geom_line(data=tech2, aes(y=E_boiler, color="electric boiler"),size=0.3)+
+  geom_line(data=tech2, aes(y=onshore_capacity, color="onshore capacity"),size=0.3)+
+  geom_line(data=tech2, aes(y=solar, color="solar"),size=0.3)+
+  geom_line(data=tech2, aes(y=wind, color="wind"),size=0.3)+
+  geom_line(data=tech2, aes(y=hydrogen, color= "hydrogen storage"),size=0.3)+
+  facet_wrap(~location, scales = "free_y")+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=0, hjust=0.5,vjust=0.5),
+      strip.text = element_text(size=8),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+ ylab("Capacity (MW)")+
+     xlab(TeX("$\n CO_2$ tax (EUR/t)"))
+ggsave("co2tax_tech_cap.pdf", width=14, height=8.65, units="cm")
+```
+##### sensitivity analysis of CO2 budget
+##### emission
+```{r cars}
+emission = read_xlsx("co2budget_sensitivity_0.xlsx", sheet="emission")
+emission_plot=ggplot(data=emission, aes(x=co2budget))+
+   scale_x_reverse(breaks =round(seq(0, 5.6, by = 1),1))+
+  geom_line(data=emission, aes(y=emission, color="OEH"),size=0.3)+
+  geom_line(data=emission, aes(y=emission_nohub, color="Base"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+ ylab("Emission (Mt)")+
+     xlab(TeX("$\n CO_2$ budget (Mt/yr)"))
+```
+##### cost
+```{r cars}
+cost=read_xlsx("co2budget_sensitivity_0.xlsx", sheet="cost")
+cost_plot=ggplot(data=cost, aes(x=co2budget))+
+  scale_x_reverse(breaks =round(seq(0, 5.6, by = 1),1))+
+  geom_line(data=cost, aes(y=cost_hub, color="OEH"),size=0.3)+
+  geom_line(data=cost, aes(y=cost_nohub, color="Base"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+ ylab("Total cost (MEUR)")+
+   xlab(TeX("$\n CO_2$ budget (Mt/yr)"))
+ggarrange(emission_plot, cost_plot,common.legend = TRUE, legend="bottom")
+ggsave("co2budget_emission_cost.pdf", width=14,height=5.5,units="cm")
+```
+
+##### energy loss
+```{r cars}
+el = read_xlsx("co2budget_sensitivity_0.xlsx", sheet="energy_loss")
+loss=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+budget=c(rep(el$co2budget,6))
+data=data.frame(loss,type,budget)
+
+el=read_xlsx("co2budget_nohub_sensitivity_0.xlsx", sheet="energy_loss")
+loss2=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type2 = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+budget2=c(rep(el$co2budget,6))
+
+loss3=c(loss,loss2) 
+type3=c(type,type2)
+budget3=c(budget,budget2)
+case=c(rep("OEH", 606), rep("Base", 606))
+data3=data.frame(loss3,type3,budget3,case)
+
+ggplot(data=data3, aes(x=budget3, y=loss3, fill=type3), size=1)+
+  geom_area()+ scale_x_reverse(breaks =round(seq(0, 5.6, by = 1),1))+
+    facet_wrap(~case)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+  scale_fill_brewer(palette = "Dark2")+
+ ylab("Energy loss (GWh)")+
+     xlab(TeX("$\n CO_2$ tax (EUR/t)"))
+  
+ggsave("co2budget_energy_loss.pdf", width=14,height=8.6, units="cm")
+```
+##### technology
+```{r cars}
+tech2 = read_xlsx("co2budget_sensitivity_0.xlsx", sheet="tech")
+ggplot(data=tech2, aes(x=co2budget))+  
+    # scale_x_continuous(breaks =round(seq(0, 5000, by = 500),1))+
+  scale_x_reverse(breaks =round(seq(0, 5.6, by = 1),1))+
+  geom_line(data=tech2, aes(y=electrolyser, color="electrolyser"),size=0.3)+
+  geom_line(data=tech2, aes(y=fuel_cell, color="fuel cell"),size=0.3)+
+  geom_line(data=tech2, aes(y=battery, color="battery"),size=0.3)+
+  geom_line(data=tech2, aes(y=E_boiler, color="electric boiler"),size=0.3)+
+  geom_line(data=tech2, aes(y=onshore_capacity, color="onshore capacity"),size=0.3)+
+  geom_line(data=tech2, aes(y=solar, color="solar"),size=0.3)+
+  geom_line(data=tech2, aes(y=wind, color="wind"),size=0.3)+
+  geom_line(data=tech2, aes(y=hydrogen, color= "hydrogen storage"),size=0.3)+
+  # scale_y_continuous(sec.axis = sec_axis(~./1,name=" Hydrogen storage capacity (t)"))+
+  facet_wrap(~location)+
+  # expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=0, hjust=0.5,vjust=0.5),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+ ylab("Capacity (MW)")+
+     xlab(TeX("$\n CO_2$ budget (Mt/yr)"))
+ggsave("co2budget_tech_cap.pdf", width=14, height=8.65, units="cm")
+```
+##### sensitivity analysis of abatement cost of power from shore S1
+##### emission
+```{r cars}
+emission = read_xlsx("abatement_cost(krt_0.5E_550tax)_sensitivity_8000.xlsx", sheet="emission")
+emission_plot=ggplot(data=emission, aes(x=abatementcost))+
+    scale_x_reverse(breaks =round(seq(0, 120, by = 20),1))+
+  geom_line(data=emission, aes(y=emission, color="OEH"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="none")+
+ ylab("Emission (Mt)")+
+     xlab("AAC (EUR/t)")
+```
+##### cost
+```{r cars}
+cost=read_xlsx("abatement_cost(krt_0.5E_550tax)_sensitivity_8000.xlsx", sheet="cost")
+cost_plot=ggplot(data=cost, aes(x=abatementcost))+
+  scale_x_reverse(breaks =round(seq(0, 120, by = 20),1))+
+  geom_line(data=cost, aes(y=cost, color="OEH"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="none")+
+ ylab("Total cost (MEUR)")+
+   xlab("AAC (EUR/t)")
+ggarrange(emission_plot, cost_plot,common.legend = TRUE, legend="none")
+ggsave("abatement_krt_emission_cost_s1.pdf", width=14,height=5.5,units="cm")
+```
+##### energy loss
+##### truncated plot (0--120)
+```{r cars}
+el = read_xlsx("abatement_cost(krt_0.5E_550tax)_sensitivity_8000.xlsx", sheet="energy_loss")
+loss=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+abatementcost=c(rep(el$abatementcost,6))
+data=data.frame(loss,type,abatementcost)
+ggplot(data=data, aes(x=abatementcost, y=loss, fill=type), size=1)+
+  geom_area()+
+   scale_x_reverse(breaks =round(seq(0, 120, by = 20),1))+
+    # facet_wrap(~case)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+  scale_fill_brewer(palette = "Dark2")+
+ ylab("Energy loss (GWh)")+
+     xlab("AAC (EUR/t)")
+ggsave("abatement_krt_energy_loss_s1.pdf", width=14,height=8.6, units="cm")
+```
+
+##### technology
+```{r cars}
+tech2 = read_xlsx("abatement_cost(krt_0.5E_550tax)_sensitivity_8000.xlsx", sheet="tech")
+ggplot(data=tech2, aes(x=abatementcost))+  
+  scale_x_reverse(breaks =round(seq(0, 120, by = 40),1))+
+  geom_line(data=tech2, aes(y=electrolyser, color="electrolyser"),size=0.3)+
+  geom_line(data=tech2, aes(y=fuel_cell, color="fuel cell"),size=0.3)+
+  geom_line(data=tech2, aes(y=battery, color="battery"),size=0.3)+
+  geom_line(data=tech2, aes(y=E_boiler, color="electric boiler"),size=0.3)+
+  geom_line(data=tech2, aes(y=onshore_capacity, color="onshore capacity"),size=0.3)+
+  geom_line(data=tech2, aes(y=solar, color="solar"),size=0.3)+
+  geom_line(data=tech2, aes(y=wind, color="wind"),size=0.3)+
+  geom_line(data=tech2, aes(y=hydrogen, color= "hydrogen storage"),size=0.3)+
+  facet_wrap(~location)+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=0, hjust=0.5,vjust=0.5),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+ ylab("Capacity (MW)")+
+     xlab(TeX("AAC (EUR/t)"))
+ggsave("aac_tech_cap_s1.pdf", width=14, height=8.65, units="cm")
+```
+
+##### sensitivity analysis of abatement cost of power from shore S2
+##### emission
+##### cost
+```{r cars}
+cost=read_xlsx("abatement_cost(krt_0E_2000tax)_sensitivity_8000.xlsx", sheet="cost")
+ggplot(data=cost, aes(x=abatementcost))+
+  scale_x_reverse(breaks =round(seq(0, 800, by = 100),1))+
+  geom_line(data=cost, aes(y=cost, color="OEH"),size=0.3)+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="none")+
+ ylab("Total cost (MEUR)")+
+   xlab("AAC (EUR/t)")
+ggsave("abatement_krt_cost_s2.pdf", width=9,height=5.5,units="cm")
+```
+##### energy loss
+##### truncated plot (0--120)
+```{r cars}
+el = read_xlsx("abatement_cost(krt_0E_2000tax)_sensitivity_8000.xlsx", sheet="energy_loss")
+loss=c(el$el_OCGT, el$el_l, el$el_production, el$el_energyhub, el$el_eshed, el$el_hshed)
+type = c(rep("OCGT",length(el $el_l)),rep("transmission",length(el $el_l)), rep("production",length(el $el_l)),rep("energy hub",length(el $el_l)),rep("electricity generation shed",length(el $el_l)),rep("heat generation shed",length(el $el_l)))
+abatementcost=c(rep(el$abatementcost,6))
+data=data.frame(loss,type,abatementcost)
+ggplot(data=data, aes(x=abatementcost, y=loss, fill=type), size=1)+
+  geom_area()+
+   scale_x_reverse(breaks =round(seq(0,800, by = 100),1))+
+  expand_limits(y=0)+
+theme(legend.title = element_blank(),
+      legend.box="horizontal", legend.margin=margin(),
+        panel.background = element_rect(fill = "white",
+                                colour = "black",
+                                size = 0.25),
+        axis.text.x=element_text( hjust=0.5,vjust=0.5),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),panel.grid.major = element_line(size = 0.25, linetype = 'dashed',
+                                colour = "grey"),
+      legend.position="bottom")+
+  scale_fill_brewer(palette = "Dark2")+
+ ylab("Energy loss (GWh)")+
+     xlab("AAC (EUR/t)")
+  
+ggsave("abatement_krt_energy_loss_s2.pdf", width=14,height=8.6, units="cm")
+```
+
+```{r cars}
+tech2 = read_xlsx("abatement_cost(krt_0E_2000tax)_sensitivity_8000.xlsx", sheet="tech")
+ggplot(data=tech2, aes(x=abatementcost))+  
+  scale_x_reverse(breaks =round(seq(0, 800, by = 200),1))+
+  geom_line(data=tech2, aes(y=electrolyser, color="electrolyser"),size=0.3)+
+  geom_line(data=tech2, aes(y=fuel_cell, color="fuel cell"),size=0.3)+
+  geom_line(data=tech2, aes(y=battery, color="battery"),size=0.3)+
+  geom_line(data=tech2, aes(y=E_boiler, color="electric boiler"),size=0.3)+
+  geom_line(data=tech2, aes(y=onshore_capacity, color="onshore capacity"),size=0.3)+
+  geom_line(data=tech2, aes(y=solar, color="solar"),size=0.3)+
+  geom_line(data=tech2, aes(y=wind, color="wind"),size=0.3)+
+  geom_line(data=tech2, aes(y=hydrogen, color= "hydrogen storage"),size=0.3)+
+  facet_wrap(~location)+
+theme(legend.title = element_blank(),
+      legend.position = "bottom",
+        panel.background = element_rect(
+                                colour = "black",
+                                size = 0.25),
+
+        axis.text.x=element_text(angle=0, hjust=0.5,vjust=0.5),
+           panel.grid.minor = element_blank(),panel.grid.major = element_line(size = 0.25,
+                                colour = "white"))+
+ ylab("Capacity (MW)")+
+     xlab(TeX("AAC (EUR/t)"))
+ggsave("aac_tech_cap_s2.pdf", width=14, height=8.65, units="cm")
+```
